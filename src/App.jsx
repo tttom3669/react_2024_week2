@@ -91,6 +91,7 @@ const ProductsPanel = ({ isAuth }) => {
       console.log(res);
       alert('使用者已登入成功');
     } catch (error) {
+      alert('帳號或密碼錯誤');
       console.log(error);
     }
   };
