@@ -4,12 +4,6 @@ import { useEffect, useState } from 'react';
 
 const { VITE_BASE_URL: API_URL, VITE_APP_PATH: API_PATH } = import.meta.env;
 
-// POST
-
-// {
-//   "username": "example@test.com",
-//   "password": "example"
-// }
 const LoginPanel = ({ isAuth, setIsAuth }) => {
   const [account, setAccount] = useState({});
   const accountHandler = (e) => {
@@ -27,10 +21,12 @@ const LoginPanel = ({ isAuth, setIsAuth }) => {
       const { token, expired } = res.data;
       document.cookie = `hexToken=${token}; expires=${new Date(expired)}`;
       axios.defaults.headers.common['Authorization'] = token;
+
       setIsAuth(true);
       alert('登入成功');
     } catch (error) {
       alert('帳號或密碼錯誤');
+      setIsAuth(false);
       console.log(error);
     }
   };
@@ -74,15 +70,23 @@ const LoginPanel = ({ isAuth, setIsAuth }) => {
   );
 };
 
-const ProductsPanel = ({ isAuth }) => {
+const ProductsPanel = ({ isAuth, setIsAuth }) => {
   const [tempProduct, setTempProduct] = useState({});
   const [products, setProducts] = useState([]);
   const getProducts = async () => {
     try {
-      const res = await axios.get(`${API_URL}/v2/api/${API_PATH}/products/all`);
-      const { products: productsResult } = res.data;
+      const cookie = document.cookie.replace(
+        /(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/,
+        '$1'
+      );
+      axios.defaults.headers.common['Authorization'] = cookie;
+      const res = await axios.get(
+        `${API_URL}/v2/api/${API_PATH}/admin/products`
+      );
+      const { products:productsResult } = res.data;
       setProducts([...productsResult]);
     } catch (error) {
+      setIsAuth(false);
       console.log(error);
     }
   };
@@ -196,7 +200,7 @@ function App() {
   return (
     <>
       <LoginPanel isAuth={isAuth} setIsAuth={setIsAuth} />
-      <ProductsPanel isAuth={isAuth} />
+      <ProductsPanel isAuth={isAuth} setIsAuth={setIsAuth} />
     </>
   );
 }
